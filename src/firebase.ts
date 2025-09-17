@@ -1,7 +1,7 @@
-import { initializeApp, getApps, getApp } from 'firebase/app';
+import { initializeApp, getApps, getApp, type FirebaseOptions, type FirebaseApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
-const firebaseConfig = {
+const firebaseConfig: FirebaseOptions = {
   apiKey: 'AIzaSyD6grYVHjypUQW5KfG2yWqVhd9G--IVfwA',
   authDomain: 'warhammerquestcharacters.firebaseapp.com',
   projectId: 'warhammerquestcharacters',
@@ -11,7 +11,7 @@ const firebaseConfig = {
   measurementId: 'G-KW1060JDCM'
 };
 
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const app: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 export const db = getFirestore(app);
 export { app, firebaseConfig };
