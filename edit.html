@@ -1,224 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Character | Warhammer Quest</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/feather-icons"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
-    <style>
-        .stat-input:focus {
-            box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.5);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Character | Warhammer Quest</title>
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen">
-    <div class="container mx-auto px-4 py-8 max-w-4xl">
-        <header class="mb-8">
-            <h1 class="text-4xl font-bold text-yellow-400 mb-2" id="pageTitle">New Character</h1>
-            <div class="flex items-center gap-4">
-                <a href="index.html" class="text-gray-400 hover:text-white flex items-center gap-1">
-                    <i data-feather="arrow-left" class="w-4 h-4"></i> Back to Characters
-                </a>
-            </div>
-        </header>
+  <div class="container mx-auto px-4 py-8 max-w-4xl">
+    <header class="mb-8">
+      <h1 class="text-4xl font-bold text-yellow-400 mb-2" id="pageTitle">New Character</h1>
+      <div class="flex items-center gap-4">
+        <a href="index.html" class="text-gray-400 hover:text-white flex items-center gap-1">
+          <i data-feather="arrow-left" class="w-4 h-4"></i> Back to Characters
+        </a>
+      </div>
+    </header>
 
-        <div class="bg-gray-800 rounded-xl p-6 shadow-lg">
-            <form id="characterForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Basic Info -->
-                <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label for="name" class="block text-sm font-medium text-gray-300 mb-1">Character Name</label>
-                        <input type="text" id="name" name="name" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 stat-input" required>
-                    </div>
-                    <div>
-                        <label for="race" class="block text-sm font-medium text-gray-300 mb-1">Race</label>
-                        <input type="text" id="race" name="race" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 stat-input">
-                    </div>
-                    <div>
-                        <label for="class" class="block text-sm font-medium text-gray-300 mb-1">Class</label>
-                        <input type="text" id="class" name="class" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 stat-input">
-                    </div>
-                </div>
-
-                <!-- Stats -->
-                <div class="md:col-span-2 bg-gray-700 p-4 rounded-lg">
-                    <h3 class="text-lg font-semibold text-yellow-400 mb-4 flex items-center gap-2">
-                        <i data-feather="activity"></i> Stats
-                    </h3>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div>
-                            <label for="level" class="block text-sm font-medium text-gray-300 mb-1">Level</label>
-                            <input type="number" id="level" name="level" min="1" value="1" class="w-full bg-gray-600 border border-gray-500 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 stat-input">
-                        </div>
-                        <div>
-                            <label for="xp" class="block text-sm font-medium text-gray-300 mb-1">XP</label>
-                            <input type="number" id="xp" name="xp" min="0" value="0" class="w-full bg-gray-600 border border-gray-500 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 stat-input">
-                        </div>
-                        <div>
-                            <label for="gold" class="block text-sm font-medium text-gray-300 mb-1">Gold</label>
-                            <input type="number" id="gold" name="gold" min="0" value="0" class="w-full bg-gray-600 border border-gray-500 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 stat-input">
-                        </div>
-                        <div>
-                            <label for="wounds" class="block text-sm font-medium text-gray-300 mb-1">Wounds</label>
-                            <input type="number" id="wounds" name="wounds" min="0" value="0" class="w-full bg-gray-600 border border-gray-500 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 stat-input">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Attributes -->
-                <div class="md:col-span-2 bg-gray-700 p-4 rounded-lg">
-                    <h3 class="text-lg font-semibold text-yellow-400 mb-4 flex items-center gap-2">
-                        <i data-feather="shield"></i> Attributes
-                    </h3>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div>
-                            <label for="strength" class="block text-sm font-medium text-gray-300 mb-1">Strength</label>
-                            <input type="number" id="strength" name="strength" min="1" value="1" class="w-full bg-gray-600 border border-gray-500 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 stat-input">
-                        </div>
-                        <div>
-                            <label for="toughness" class="block text-sm font-medium text-gray-300 mb-1">Toughness</label>
-                            <input type="number" id="toughness" name="toughness" min="1" value="1" class="w-full bg-gray-600 border border-gray-500 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 stat-input">
-                        </div>
-                        <div>
-                            <label for="agility" class="block text-sm font-medium text-gray-300 mb-1">Agility</label>
-                            <input type="number" id="agility" name="agility" min="1" value="1" class="w-full bg-gray-600 border border-gray-500 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 stat-input">
-                        </div>
-                        <div>
-                            <label for="willpower" class="block text-sm font-medium text-gray-300 mb-1">Willpower</label>
-                            <input type="number" id="willpower" name="willpower" min="1" value="1" class="w-full bg-gray-600 border border-gray-500 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 stat-input">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Equipment & Notes -->
-                <div>
-                    <h3 class="text-lg font-semibold text-yellow-400 mb-4 flex items-center gap-2">
-                        <i data-feather="package"></i> Equipment
-                    </h3>
-                    <textarea id="equipment" name="equipment" rows="5" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500"></textarea>
-                </div>
-
-                <div>
-                    <h3 class="text-lg font-semibold text-yellow-400 mb-4 flex items-center gap-2">
-                        <i data-feather="file-text"></i> Notes
-                    </h3>
-                    <textarea id="notes" name="notes" rows="5" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500"></textarea>
-                </div>
-
-                <div class="md:col-span-2 flex justify-end gap-4 mt-6">
-                    <button type="button" id="cancelBtn" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg transition-all">
-                        Cancel
-                    </button>
-                    <button type="submit" id="saveBtn" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2 transition-all">
-                        <i data-feather="save"></i> Save Character
-                    </button>
-                </div>
-            </form>
+    <div class="bg-gray-800 rounded-xl p-6 shadow-lg">
+      <form id="characterForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label for="name" class="block text-sm font-medium text-gray-300 mb-1">Character Name</label>
+            <input type="text" id="name" name="name" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 stat-input" required>
+          </div>
+          <div>
+            <label for="race" class="block text-sm font-medium text-gray-300 mb-1">Race</label>
+            <input type="text" id="race" name="race" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 stat-input">
+          </div>
+          <div>
+            <label for="class" class="block text-sm font-medium text-gray-300 mb-1">Class</label>
+            <input type="text" id="class" name="class" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 stat-input">
+          </div>
         </div>
+
+        <div class="md:col-span-2 bg-gray-700 p-4 rounded-lg">
+          <h3 class="text-lg font-semibold text-yellow-400 mb-4 flex items-center gap-2">
+            <i data-feather="activity"></i> Stats
+          </h3>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <label for="level" class="block text-sm font-medium text-gray-300 mb-1">Level</label>
+              <input type="number" id="level" name="level" min="1" value="1" class="w-full bg-gray-600 border border-gray-500 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 stat-input">
+            </div>
+            <div>
+              <label for="xp" class="block text-sm font-medium text-gray-300 mb-1">XP</label>
+              <input type="number" id="xp" name="xp" min="0" value="0" class="w-full bg-gray-600 border border-gray-500 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 stat-input">
+            </div>
+            <div>
+              <label for="gold" class="block text-sm font-medium text-gray-300 mb-1">Gold</label>
+              <input type="number" id="gold" name="gold" min="0" value="0" class="w-full bg-gray-600 border border-gray-500 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 stat-input">
+            </div>
+            <div>
+              <label for="wounds" class="block text-sm font-medium text-gray-300 mb-1">Wounds</label>
+              <input type="number" id="wounds" name="wounds" min="0" value="0" class="w-full bg-gray-600 border border-gray-500 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 stat-input">
+            </div>
+          </div>
+        </div>
+
+        <div class="md:col-span-2 bg-gray-700 p-4 rounded-lg">
+          <h3 class="text-lg font-semibold text-yellow-400 mb-4 flex items-center gap-2">
+            <i data-feather="shield"></i> Attributes
+          </h3>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <label for="strength" class="block text-sm font-medium text-gray-300 mb-1">Strength</label>
+              <input type="number" id="strength" name="strength" min="1" value="1" class="w-full bg-gray-600 border border-gray-500 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 stat-input">
+            </div>
+            <div>
+              <label for="toughness" class="block text-sm font-medium text-gray-300 mb-1">Toughness</label>
+              <input type="number" id="toughness" name="toughness" min="1" value="1" class="w-full bg-gray-600 border border-gray-500 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 stat-input">
+            </div>
+            <div>
+              <label for="agility" class="block text-sm font-medium text-gray-300 mb-1">Agility</label>
+              <input type="number" id="agility" name="agility" min="1" value="1" class="w-full bg-gray-600 border border-gray-500 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 stat-input">
+            </div>
+            <div>
+              <label for="willpower" class="block text-sm font-medium text-gray-300 mb-1">Willpower</label>
+              <input type="number" id="willpower" name="willpower" min="1" value="1" class="w-full bg-gray-600 border border-gray-500 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 stat-input">
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-lg font-semibold text-yellow-400 mb-4 flex items-center gap-2">
+            <i data-feather="package"></i> Equipment
+          </h3>
+          <textarea id="equipment" name="equipment" rows="5" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500"></textarea>
+        </div>
+
+        <div>
+          <h3 class="text-lg font-semibold text-yellow-400 mb-4 flex items-center gap-2">
+            <i data-feather="file-text"></i> Notes
+          </h3>
+          <textarea id="notes" name="notes" rows="5" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500"></textarea>
+        </div>
+
+        <div class="md:col-span-2 flex justify-end gap-4 mt-6">
+          <button type="button" id="cancelBtn" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg transition-all">
+            Cancel
+          </button>
+          <button type="submit" id="saveBtn" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2 transition-all">
+            <i data-feather="save"></i> Save Character
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
 
-    <script>
-        // Initialize Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyD6grYVHjypUQW5KfG2yWqVhd9G--IVfwA",
-            authDomain: "warhammerquestcharacters.firebaseapp.com",
-            projectId: "warhammerquestcharacters",
-            storageBucket: "warhammerquestcharacters.appspot.com",
-            messagingSenderId: "535458585770",
-            appId: "1:535458585770:web:5ae7538fd639ec0689c4d3",
-            measurementId: "G-KW1060JDCM"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            feather.replace();
-
-            const urlParams = new URLSearchParams(window.location.search);
-            const characterId = urlParams.get('id');
-            const characterForm = document.getElementById('characterForm');
-            const pageTitle = document.getElementById('pageTitle');
-
-            // Cancel button
-            document.getElementById('cancelBtn').addEventListener('click', () => {
-                window.location.href = 'index.html';
-            });
-
-            if (characterId) {
-                // Editing existing character
-                pageTitle.textContent = 'Edit Character';
-                
-                try {
-                    const doc = await db.collection("characters").doc(characterId).get();
-                    if (doc.exists) {
-                        const character = doc.data();
-                        
-                        // Set form values
-                        for (const field in character) {
-                            const input = document.getElementById(field);
-                            if (input) {
-                                if (input.type === 'number') {
-                                    input.value = character[field] || 0;
-                                } else {
-                                    input.value = character[field] || '';
-                                }
-                            }
-                        }
-                    } else {
-                        console.log("No such document!");
-                    }
-                } catch (error) {
-                    console.error("Error getting document:", error);
-                }
-            }
-
-            // Form submission
-            characterForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                const formData = new FormData(characterForm);
-                const characterData = {};
-                
-                formData.forEach((value, key) => {
-                    // Convert numeric fields to numbers
-                    if (['level', 'xp', 'gold', 'wounds', 'strength', 'toughness', 'agility', 'willpower'].includes(key)) {
-                        characterData[key] = Number(value);
-                    } else {
-                        characterData[key] = value;
-                    }
-                });
-
-                try {
-                    const saveBtn = document.getElementById('saveBtn');
-                    saveBtn.disabled = true;
-                    saveBtn.innerHTML = '<i data-feather="loader" class="animate-spin"></i> Saving...';
-                    feather.replace();
-
-                    if (characterId) {
-                        // Update existing character
-                        await db.collection("characters").doc(characterId).update(characterData);
-                    } else {
-                        // Add new character
-                        await db.collection("characters").add(characterData);
-                    }
-
-                    window.location.href = 'index.html';
-                } catch (error) {
-                    console.error("Error saving character: ", error);
-                    alert('Error saving character: ' + error.message);
-                    
-                    const saveBtn = document.getElementById('saveBtn');
-                    saveBtn.disabled = false;
-                    saveBtn.innerHTML = '<i data-feather="save"></i> Save Character';
-                    feather.replace();
-                }
-            });
-        });
-    </script>
+  <script type="module" src="/src/edit.js"></script>
 </body>
 </html>
