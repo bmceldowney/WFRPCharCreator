@@ -1,13 +1,20 @@
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, type User, type Unsubscribe } from 'firebase/auth';
+import {
+  getAuth,
+  onAuthStateChanged,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut,
+  type User,
+  type Unsubscribe
+} from 'firebase/auth';
 import { app } from './firebase';
 
 const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
 
 let overlay: HTMLDivElement | null = null;
 let errorMessageEl: HTMLParagraphElement | null = null;
-let submitButton: HTMLButtonElement | null = null;
-let emailInput: HTMLInputElement | null = null;
-let passwordInput: HTMLInputElement | null = null;
+let signInButton: HTMLButtonElement | null = null;
 
 const ensureOverlay = (): void => {
   if (overlay) {
@@ -16,83 +23,57 @@ const ensureOverlay = (): void => {
 
   overlay = document.createElement('div');
   overlay.id = 'authOverlay';
-  overlay.className = 'fixed inset-0 z-50 hidden items-center justify-center bg-gray-900/90 px-4';
+  overlay.className = 'fixed inset-0 z-50 hidden flex items-center justify-center bg-gray-900/90 px-4';
   overlay.innerHTML = `
-    <div class="w-full max-w-md rounded-2xl bg-gray-800 p-8 shadow-2xl border border-gray-700">
-      <h2 class="text-2xl font-semibold text-yellow-400 mb-4">Sign in to continue</h2>
-      <p class="text-sm text-gray-400 mb-6">
-        Enter the email and password for your Firebase user account.
-      </p>
-      <form class="space-y-4" id="authForm">
-        <div>
-          <label for="authEmail" class="block text-sm font-medium text-gray-300 mb-2">Email</label>
-          <input
-            id="authEmail"
-            name="email"
-            type="email"
-            autocomplete="username"
-            required
-            class="w-full rounded-lg border border-gray-600 bg-gray-900 px-4 py-2 text-gray-100 focus:border-yellow-500 focus:outline-none"
-          />
-        </div>
-        <div>
-          <label for="authPassword" class="block text-sm font-medium text-gray-300 mb-2">Password</label>
-          <input
-            id="authPassword"
-            name="password"
-            type="password"
-            autocomplete="current-password"
-            required
-            class="w-full rounded-lg border border-gray-600 bg-gray-900 px-4 py-2 text-gray-100 focus:border-yellow-500 focus:outline-none"
-          />
-        </div>
-        <p class="h-5 text-sm text-red-400" id="authError"></p>
-        <button
-          type="submit"
-          class="w-full rounded-lg bg-yellow-600 py-2 font-semibold text-gray-900 transition hover:bg-yellow-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          Sign In
-        </button>
-      </form>
+    <div class="w-full max-w-md rounded-2xl bg-gray-800 p-8 shadow-2xl border border-gray-700 text-center space-y-6">
+      <div>
+        <h2 class="text-2xl font-semibold text-yellow-400 mb-2">Sign in to continue</h2>
+        <p class="text-sm text-gray-400">
+          Use your Google account to manage characters.
+        </p>
+      </div>
+      <p class="h-5 text-sm text-red-400" id="authError"></p>
+      <button
+        id="googleSignInBtn"
+        class="inline-flex items-center justify-center gap-2 rounded-lg bg-white py-2 px-4 font-semibold text-gray-900 transition hover:bg-gray-200 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" class="h-5 w-5">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.7 1.22 9.19 3.6l6.85-6.85C35.45 2.39 30.16 0 24 0 14.63 0 6.43 5.26 2.59 12.9l7.98 6.2C12.43 13.32 17.72 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.5 24.5c0-1.56-.14-3.06-.4-4.5H24v9h12.7c-.55 2.9-2.24 5.36-4.77 7.02l7.7 5.98C43.68 38.86 46.5 32.2 46.5 24.5z"/>
+          <path fill="#FBBC05" d="M10.57 28.7c-.48-1.4-.75-2.9-.75-4.45s.27-3.05.75-4.45l-7.98-6.2C.93 16.9 0 20.34 0 24.25s.93 7.35 2.59 10.65l7.98-6.2z"/>
+          <path fill="#34A853" d="M24 48c6.16 0 11.36-2.04 15.16-5.53l-7.7-5.98c-2.14 1.46-4.89 2.31-7.46 2.31-6.28 0-11.57-3.82-13.43-9.15l-7.98 6.2C6.43 42.74 14.63 48 24 48z"/>
+          <path fill="none" d="M0 0h48v48H0z"/>
+        </svg>
+        Sign in with Google
+      </button>
     </div>
   `;
 
   document.body.appendChild(overlay);
 
-  const form = overlay.querySelector<HTMLFormElement>('#authForm');
   errorMessageEl = overlay.querySelector<HTMLParagraphElement>('#authError');
-  submitButton = overlay.querySelector<HTMLButtonElement>('button[type="submit"]');
-  emailInput = overlay.querySelector<HTMLInputElement>('#authEmail');
-  passwordInput = overlay.querySelector<HTMLInputElement>('#authPassword');
+  signInButton = overlay.querySelector<HTMLButtonElement>('#googleSignInBtn');
 
-  form?.addEventListener('submit', async (event) => {
-    event.preventDefault();
-
-    if (!submitButton || !emailInput || !passwordInput) {
+  signInButton?.addEventListener('click', async () => {
+    if (!signInButton) {
       return;
     }
-
-    const email = emailInput.value.trim();
-    const password = passwordInput.value;
 
     if (errorMessageEl) {
       errorMessageEl.textContent = '';
     }
 
-    submitButton.disabled = true;
+    signInButton.disabled = true;
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await signInWithPopup(auth, provider);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Authentication failed.';
       if (errorMessageEl) {
         errorMessageEl.textContent = message;
       }
-      submitButton.disabled = false;
-      return;
+      signInButton.disabled = false;
     }
-
-    submitButton.disabled = false;
   });
 };
 
@@ -101,8 +82,8 @@ const showOverlay = (): void => {
   if (overlay) {
     overlay.classList.remove('hidden');
   }
-  if (emailInput) {
-    emailInput.focus();
+  if (signInButton) {
+    signInButton.focus();
   }
 };
 
@@ -110,8 +91,8 @@ const hideOverlay = (): void => {
   if (overlay) {
     overlay.classList.add('hidden');
   }
-  if (passwordInput) {
-    passwordInput.value = '';
+  if (signInButton) {
+    signInButton.disabled = false;
   }
 };
 

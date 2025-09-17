@@ -2,7 +2,8 @@ import './style.css';
 import feather from 'feather-icons';
 import { addDoc, collection, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
-import { requireAuth, attachSignOutHandler } from './auth';
+import { requireAuth } from './auth';
+import { initHeader } from './header';
 import type { Character } from './types/character';
 
 type NumericField =
@@ -71,6 +72,8 @@ const populateForm = (data: Partial<Character>): void => {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
+  initHeader();
+
   feather.replace();
 
   const urlParams = new URLSearchParams(window.location.search);
@@ -79,14 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const pageTitle = document.getElementById('pageTitle');
   const cancelBtn = document.getElementById('cancelBtn');
   const saveBtn = document.getElementById('saveBtn') as HTMLButtonElement | null;
-  const signOutBtn = document.getElementById('signOutBtn');
   const originalSaveContent = saveBtn ? saveBtn.innerHTML : '';
-
-  if (signOutBtn) {
-    signOutBtn.classList.add('hidden');
-  }
-
-  attachSignOutHandler(signOutBtn);
 
   try {
     await requireAuth();
@@ -94,10 +90,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.error('Authentication error:', error);
     window.alert('Authentication is required to manage characters.');
     return;
-  }
-
-  if (signOutBtn) {
-    signOutBtn.classList.remove('hidden');
   }
 
   if (cancelBtn) {

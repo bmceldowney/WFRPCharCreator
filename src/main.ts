@@ -4,7 +4,8 @@ import 'aos/dist/aos.css';
 import feather from 'feather-icons';
 import { collection, deleteDoc, doc, getDocs } from 'firebase/firestore';
 import { db } from './firebase';
-import { requireAuth, attachSignOutHandler, observeAuth } from './auth';
+import { requireAuth, observeAuth } from './auth';
+import { initHeader } from './header';
 import type { Character } from './types/character';
 import type { User } from 'firebase/auth';
 
@@ -207,22 +208,13 @@ const handleCharacterActions = async (event: MouseEvent): Promise<void> => {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
+  initHeader();
+
   charactersContainer = document.getElementById('charactersContainer');
   const addCharacterBtn = document.getElementById('addCharacterBtn');
-  const signOutBtn = document.getElementById('signOutBtn');
-
-  attachSignOutHandler(signOutBtn);
 
   observeAuth((user) => {
     currentUser = user;
-
-    if (signOutBtn) {
-      if (user) {
-        signOutBtn.classList.remove('hidden');
-      } else {
-        signOutBtn.classList.add('hidden');
-      }
-    }
   });
 
   AOS.init();
