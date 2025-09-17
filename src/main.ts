@@ -23,37 +23,10 @@ const formatValue = (value: string | number | null | undefined, fallback = 'N/A'
   return value;
 };
 
-const renderList = (items: string[] | null | undefined, emptyLabel: string): string => {
-  if (!Array.isArray(items) || items.length === 0) {
-    return `<li class="text-sm text-gray-500">${emptyLabel}</li>`;
-  }
-
-  return items
-    .map((item) => `<li class="text-sm text-gray-200">${item}</li>`)
-    .join('');
-};
-
 const createCharacterCard = (character: Character, id: string): string => {
   const woundsDisplay = character.currentWounds !== undefined && character.startingWounds !== undefined
     ? `${formatValue(character.currentWounds)}/${formatValue(character.startingWounds)}`
     : formatValue(character.currentWounds ?? character.startingWounds);
-
-  const stats: Array<[string, string | number]> = [
-    ['Battle Level', formatValue(character.battleLevel)],
-    ['Gold', formatValue(character.gold, 0)],
-    ['Gold to Next Level', formatValue(character.goldToNextLevel)],
-    ['Wounds', woundsDisplay || 'N/A'],
-    ['Movement', formatValue(character.movement)],
-    ['Attacks', formatValue(character.attacks)],
-    ['Strength', formatValue(character.strength)],
-    ['Toughness', formatValue(character.toughness)],
-    ['Weapon Skill', formatValue(character.weaponSkill)],
-    ['Ballistics Skill', formatValue(character.ballisticsSkill)],
-    ['Initiative', formatValue(character.initiative)],
-    ['Willpower', formatValue(character.willpower)],
-    ['Pinning', formatValue(character.pinning)],
-    ['Luck', formatValue(character.luck)]
-  ];
 
   return `
     <div class="character-card bg-gray-800 rounded-xl p-6 shadow-lg cursor-pointer" data-id="${id}" data-aos="fade-up">
@@ -64,30 +37,18 @@ const createCharacterCard = (character: Character, id: string): string => {
         </div>
         <span class="bg-gray-700 text-xs px-3 py-1 rounded-full">${formatValue(character.race, 'Unknown')}</span>
       </div>
-      <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-        ${stats
-          .map(
-            ([label, value]) => `
-              <div>
-                <p class="text-xs uppercase tracking-wide text-gray-500">${label}</p>
-                <p class="font-semibold text-sm">${value}</p>
-              </div>
-            `
-          )
-          .join('')}
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div>
-          <h4 class="text-sm font-semibold text-yellow-400 mb-2">Items</h4>
-          <ul class="space-y-1 list-disc list-inside">
-            ${renderList(character.items, 'No items recorded')}
-          </ul>
+          <p class="text-xs uppercase tracking-wide text-gray-500">Battle Level</p>
+          <p class="font-semibold text-sm">${formatValue(character.battleLevel)}</p>
         </div>
         <div>
-          <h4 class="text-sm font-semibold text-yellow-400 mb-2">Skills</h4>
-          <ul class="space-y-1 list-disc list-inside">
-            ${renderList(character.skills, 'No skills recorded')}
-          </ul>
+          <p class="text-xs uppercase tracking-wide text-gray-500">Gold</p>
+          <p class="font-semibold text-sm">${formatValue(character.gold, 0)}</p>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-wide text-gray-500">Wounds</p>
+          <p class="font-semibold text-sm">${woundsDisplay || 'N/A'}</p>
         </div>
       </div>
       <div class="flex justify-between mt-6">
