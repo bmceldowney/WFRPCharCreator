@@ -76,15 +76,29 @@ const showError = (message) => {
     return;
   }
 
-  charactersContainer.innerHTML = `
-    <div class="col-span-full text-center py-12">
-      <div class="text-red-400 mb-4">
-        <i data-feather="alert-triangle" class="w-12 h-12 mx-auto"></i>
-      </div>
-      <h3 class="text-xl font-semibold mb-2">Error loading characters</h3>
-      <p class="text-gray-400">${message}</p>
-    </div>
-  `;
+  // Create the error container
+  const wrapper = document.createElement('div');
+  wrapper.className = 'col-span-full text-center py-12';
+
+  const iconDiv = document.createElement('div');
+  iconDiv.className = 'text-red-400 mb-4';
+  iconDiv.innerHTML = '<i data-feather="alert-triangle" class="w-12 h-12 mx-auto"></i>';
+
+  const heading = document.createElement('h3');
+  heading.className = 'text-xl font-semibold mb-2';
+  heading.textContent = 'Error loading characters';
+
+  const messageP = document.createElement('p');
+  messageP.className = 'text-gray-400';
+  messageP.textContent = message;
+
+  wrapper.appendChild(iconDiv);
+  wrapper.appendChild(heading);
+  wrapper.appendChild(messageP);
+
+  charactersContainer.innerHTML = '';
+  charactersContainer.appendChild(wrapper);
+
   feather.replace();
 };
 
