@@ -2,6 +2,8 @@ import './style.css';
 import feather from 'feather-icons';
 import { addDoc, collection, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
+import { requireAuth } from './auth';
+import { initHeader } from './header';
 import type { Character } from './types/character';
 
 type NumericField =
@@ -23,6 +25,8 @@ type NumericField =
 
 type ArrayField = 'items' | 'skills';
 
+type StringField = 'name' | 'race' | 'profession';
+
 const numericFields: NumericField[] = [
   'battleLevel',
   'movement',
@@ -42,6 +46,8 @@ const numericFields: NumericField[] = [
 ];
 
 const arrayFields: ArrayField[] = ['items', 'skills'];
+
+const stringFields: StringField[] = ['name', 'race', 'profession'];
 
 const populateForm = (data: Partial<Character>): void => {
   Object.entries(data).forEach(([key, value]) => {
@@ -66,6 +72,8 @@ const populateForm = (data: Partial<Character>): void => {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
+  initHeader();
+
   feather.replace();
 
   const urlParams = new URLSearchParams(window.location.search);
@@ -75,6 +83,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   const cancelBtn = document.getElementById('cancelBtn');
   const saveBtn = document.getElementById('saveBtn') as HTMLButtonElement | null;
   const originalSaveContent = saveBtn ? saveBtn.innerHTML : '';
+
+  try {
+    await requireAuth();
+  } catch (error) {
+    console.error('Authentication error:', error);
+    window.alert('Authentication is required to manage characters.');
+    return;
+  }
 
   if (cancelBtn) {
     cancelBtn.addEventListener('click', () => {
@@ -127,8 +143,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
-      if (typeof value === 'string') {
-        characterData[key as keyof Character] = value.trim() as Character[keyof Character];
+      if (stringFields.includes(key as StringField) && typeof value === 'string') {
+        const field = key as StringField;
+        characterData[field] = value.trim();
       }
     });
 

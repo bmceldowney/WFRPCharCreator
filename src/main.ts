@@ -4,9 +4,13 @@ import 'aos/dist/aos.css';
 import feather from 'feather-icons';
 import { collection, deleteDoc, doc, getDocs } from 'firebase/firestore';
 import { db } from './firebase';
+import { requireAuth, observeAuth } from './auth';
+import { initHeader } from './header';
 import type { Character } from './types/character';
+import type { User } from 'firebase/auth';
 
 let charactersContainer: HTMLElement | null;
+let currentUser: User | null = null;
 
 const formatValue = (value: string | number | null | undefined, fallback = 'N/A'): string | number => {
   if (value === null || value === undefined) {
@@ -158,11 +162,29 @@ const handleCharacterActions = async (event: MouseEvent): Promise<void> => {
   }
 
   if (editTrigger) {
+    if (!currentUser) {
+      try {
+        currentUser = await requireAuth();
+      } catch (error) {
+        console.error('Authentication error:', error);
+        return;
+      }
+    }
+
     window.location.href = `edit.html?id=${characterId}`;
     return;
   }
 
   if (deleteTrigger) {
+    if (!currentUser) {
+      try {
+        currentUser = await requireAuth();
+      } catch (error) {
+        console.error('Authentication error:', error);
+        return;
+      }
+    }
+
     const shouldDelete = window.confirm('Are you sure you want to delete this character?');
 
     if (!shouldDelete) {
@@ -185,16 +207,32 @@ const handleCharacterActions = async (event: MouseEvent): Promise<void> => {
   }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  initHeader();
+
   charactersContainer = document.getElementById('charactersContainer');
   const addCharacterBtn = document.getElementById('addCharacterBtn');
 
+  observeAuth((user) => {
+    currentUser = user;
+  });
+
   AOS.init();
   feather.replace();
-  renderCharacters();
+
+  await renderCharacters();
 
   if (addCharacterBtn) {
-    addCharacterBtn.addEventListener('click', () => {
+    addCharacterBtn.addEventListener('click', async () => {
+      if (!currentUser) {
+        try {
+          currentUser = await requireAuth();
+        } catch (error) {
+          console.error('Authentication error:', error);
+          return;
+        }
+      }
+
       window.location.href = 'edit.html';
     });
   }
