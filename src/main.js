@@ -2,12 +2,9 @@ import './style.css';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import feather from 'feather-icons';
-import GLOBE from 'vanta/dist/vanta.globe.min.js';
-import * as THREE from 'three';
 import { collection, deleteDoc, doc, getDocs } from 'firebase/firestore';
 import { db } from './firebase.js';
 
-let vantaEffect;
 let charactersContainer;
 
 const createCharacterCard = (character, id) => `
@@ -44,32 +41,6 @@ const createCharacterCard = (character, id) => `
     </div>
   </div>
 `;
-
-const initVantaBackground = () => {
-  const background = document.getElementById('vanta-bg');
-
-  if (!background) {
-    return;
-  }
-
-  if (vantaEffect) {
-    vantaEffect.destroy();
-  }
-
-  vantaEffect = GLOBE({
-    el: background,
-    THREE,
-    mouseControls: true,
-    touchControls: true,
-    gyroControls: false,
-    minHeight: 200.0,
-    minWidth: 200.0,
-    scale: 1.0,
-    scaleMobile: 1.0,
-    color: 0xffd700,
-    backgroundColor: 0x111827
-  });
-};
 
 const showError = (message) => {
   if (!charactersContainer) {
@@ -185,7 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
   charactersContainer = document.getElementById('charactersContainer');
   const addCharacterBtn = document.getElementById('addCharacterBtn');
 
-  initVantaBackground();
   AOS.init();
   feather.replace();
   renderCharacters();
@@ -198,11 +168,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (charactersContainer) {
     charactersContainer.addEventListener('click', handleCharacterActions);
-  }
-});
-
-window.addEventListener('beforeunload', () => {
-  if (vantaEffect) {
-    vantaEffect.destroy();
   }
 });
