@@ -38,14 +38,14 @@ const createCharacterCard = (character: Character, id: string): string => {
         </div>
         <span class="bg-gray-700 text-xs px-3 py-1 rounded-full">${formatValue(character.race, 'Unknown')}</span>
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div class="grid grid-cols-3 gap-4 mb-6">
         <div>
           <p class="text-xs uppercase tracking-wide text-gray-500">Battle Level</p>
           <p class="font-semibold text-sm">${formatValue(character.battleLevel)}</p>
         </div>
         <div>
           <p class="text-xs uppercase tracking-wide text-gray-500">Gold</p>
-          <p class="font-semibold text-sm">${formatValue(character.gold, 0)}</p>
+          <p class="font-semibold text-sm">${formatValue(character.gold, '0')}</p>
         </div>
         <div>
           <p class="text-xs uppercase tracking-wide text-gray-500">Wounds</p>
@@ -196,7 +196,7 @@ const handleCharacterActions = async (event: MouseEvent): Promise<void> => {
       card.remove();
       feather.replace();
 
-      if (!charactersContainer.querySelector('.character-card')) {
+      if (!charactersContainer?.querySelector('.character-card')) {
         showEmptyState();
       }
     } catch (error) {
@@ -213,8 +213,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   charactersContainer = document.getElementById('charactersContainer');
   const addCharacterBtn = document.getElementById('addCharacterBtn');
 
+  if (addCharacterBtn) {
+    addCharacterBtn.classList.add('hidden');
+  }
+
   observeAuth((user) => {
     currentUser = user;
+
+    if (addCharacterBtn) {
+      if (user) {
+        addCharacterBtn.classList.remove('hidden');
+      } else {
+        addCharacterBtn.classList.add('hidden');
+      }
+    }
+
   });
 
   AOS.init();
