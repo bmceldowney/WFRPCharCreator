@@ -1,6 +1,11 @@
 import { observeAuth, attachSignOutHandler, requireAuth } from './auth';
 import type { User } from 'firebase/auth';
 
+interface HeaderOptions {
+  showAddButton?: boolean;
+  onAddCharacter?: () => void;
+}
+
 const createAvatarElement = (user: User): HTMLElement => {
   const wrapper = document.createElement('div');
   wrapper.className = 'flex items-center gap-2';
@@ -48,11 +53,32 @@ const createAvatarElement = (user: User): HTMLElement => {
   return wrapper;
 };
 
-const renderSignedInState = (actionsContainer: HTMLElement, user: User): void => {
+const renderSignedInState = (actionsContainer: HTMLElement, user: User, options?: HeaderOptions): void => {
   actionsContainer.innerHTML = '';
 
   const avatar = createAvatarElement(user);
   actionsContainer.appendChild(avatar);
+
+  if (options?.showAddButton && options.onAddCharacter) {
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'flex items-center gap-2 rounded-lg bg-yellow-500 px-4 py-2 text-sm font-semibold text-gray-900 transition hover:bg-yellow-400 focus:outline-none';
+    addBtn.innerHTML = `
+      <span class="flex h-5 w-5 items-center justify-center rounded-full bg-gray-900/20">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </span>
+      <span>Add Character</span>
+    `;
+
+    addBtn.addEventListener('click', () => {
+      options.onAddCharacter?.();
+    });
+
+    actionsContainer.appendChild(addBtn);
+  }
 
   const signOutBtn = document.createElement('button');
   signOutBtn.type = 'button';
@@ -81,7 +107,7 @@ const renderSignedOutState = (actionsContainer: HTMLElement): void => {
   actionsContainer.appendChild(loginBtn);
 };
 
-export const initHeader = (): void => {
+export const initHeader = (options: HeaderOptions = {}): void => {
   const actionsContainer = document.getElementById('headerActions');
 
   if (!actionsContainer) {
@@ -90,7 +116,7 @@ export const initHeader = (): void => {
 
   observeAuth((user) => {
     if (user) {
-      renderSignedInState(actionsContainer, user);
+      renderSignedInState(actionsContainer, user, options);
     } else {
       renderSignedOutState(actionsContainer);
     }
