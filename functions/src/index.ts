@@ -37,12 +37,12 @@ admin.initializeApp();
 // ... (previous imports and admin.initializeApp())
 
 export const setCustomUserRole = onCall(async (request) => {
-    const { data, auth: context } = request;
+    const { data, auth } = request;
 
     // 1. **Authentication and Authorization Check:**
     //    Crucially, verify that the person calling this function is authorized
     //    to set roles. For example, only an existing 'admin' should be able to do this.
-    if (!context.auth) {
+    if (!auth) {
         // User is not authenticated
         throw new HttpsError(
             'unauthenticated',
@@ -53,7 +53,7 @@ export const setCustomUserRole = onCall(async (request) => {
     // Example: Check if the caller has an 'admin' custom claim
     // You'd typically set the initial admin user's claim directly via the Firebase console
     // or a one-off Admin SDK script.
-    if (!(context.auth.token && context.auth.token.admin === true)) {
+    if (!auth.token?.admin) {
         throw new HttpsError(
             'permission-denied',
             'Only administrators can set user roles.'
