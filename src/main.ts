@@ -3,14 +3,15 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import feather from 'feather-icons';
 import { collection, deleteDoc, doc, getDocs } from 'firebase/firestore';
+import { getIdTokenResult, type User } from 'firebase/auth';
 import { db } from './firebase';
 import { requireAuth, observeAuth } from './auth';
 import { initHeader } from './header';
 import type { Character } from './types/character';
-import type { User } from 'firebase/auth';
 
 let charactersContainer: HTMLElement | null;
 let currentUser: User | null = null;
+let isAdmin = false;
 
 const formatValue = (value: string | number | null | undefined, fallback = 'N/A'): string | number => {
   if (value === null || value === undefined) {
@@ -52,6 +53,8 @@ const createCharacterCard = (character: Character, id: string): string => {
           <p class="font-semibold text-sm">${woundsDisplay || 'N/A'}</p>
         </div>
       </div>
+      ${isAdmin
+        ? `
       <div class="flex justify-between mt-6">
         <button class="edit-btn text-yellow-400 hover:text-yellow-300 flex items-center gap-1">
           <i data-feather="edit" class="w-4 h-4"></i> Edit
@@ -60,6 +63,8 @@ const createCharacterCard = (character: Character, id: string): string => {
           <i data-feather="trash-2" class="w-4 h-4"></i> Delete
         </button>
       </div>
+      `
+        : ''}
     </div>
   `;
 };
@@ -141,6 +146,10 @@ const renderCharacters = async (): Promise<void> => {
 };
 
 const handleCharacterActions = async (event: MouseEvent): Promise<void> => {
+  if (!isAdmin) {
+    return;
+  }
+
   const target = event.target;
 
   if (!(target instanceof HTMLElement)) {
@@ -217,36 +226,52 @@ document.addEventListener('DOMContentLoaded', async () => {
     addCharacterBtn.classList.add('hidden');
   }
 
-  observeAuth((user) => {
+  observeAuth(async (user) => {
     currentUser = user;
 
-    if (addCharacterBtn) {
-      if (user) {
-        addCharacterBtn.classList.remove('hidden');
-      } else {
-        addCharacterBtn.classList.add('hidden');
+    if (user) {
+      try {
+        const tokenResult = await getIdTokenResult(user, true);
+        isAdmin = Boolean(tokenResult.claims?.admin);
+      } catch (error) {
+        console.error('Error fetching user claims:', error);
+        isAdmin = false;
       }
+    } else {
+      isAdmin = false;
     }
 
+    if (addCharacterBtn) {
+      addCharacterBtn.classList.toggle('hidden', !isAdmin);
+    }
+
+    await renderCharacters();
   });
 
   AOS.init();
   feather.replace();
 
-  await renderCharacters();
-
   if (addCharacterBtn) {
     addCharacterBtn.addEventListener('click', async () => {
-      if (!currentUser) {
-        try {
-          currentUser = await requireAuth();
-        } catch (error) {
-          console.error('Authentication error:', error);
-          return;
-        }
-      }
+      try {
+        if (!currentUser || !isAdmin) {
+          const user = await requireAuth();
+          const tokenResult = await getIdTokenResult(user, true);
 
-      window.location.href = 'edit.html';
+          if (!tokenResult.claims?.admin) {
+            window.alert('You do not have permission to manage characters.');
+            return;
+          }
+
+          currentUser = user;
+          isAdmin = true;
+          addCharacterBtn.classList.toggle('hidden', false);
+        }
+
+        window.location.href = 'edit.html';
+      } catch (error) {
+        console.error('Authentication error:', error);
+      }
     });
   }
 

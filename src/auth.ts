@@ -16,6 +16,20 @@ let overlay: HTMLDivElement | null = null;
 let errorMessageEl: HTMLParagraphElement | null = null;
 let signInButton: HTMLButtonElement | null = null;
 
+interface PendingAuthRequest {
+  reject: (reason: Error) => void;
+  cleanup: () => void;
+}
+
+const pendingAuthRequests: PendingAuthRequest[] = [];
+
+const removePendingRequest = (request: PendingAuthRequest): void => {
+  const index = pendingAuthRequests.indexOf(request);
+  if (index !== -1) {
+    pendingAuthRequests.splice(index, 1);
+  }
+};
+
 const ensureOverlay = (): void => {
   if (overlay) {
     return;
@@ -53,6 +67,20 @@ const ensureOverlay = (): void => {
 
   errorMessageEl = overlay.querySelector<HTMLParagraphElement>('#authError');
   signInButton = overlay.querySelector<HTMLButtonElement>('#googleSignInBtn');
+
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) {
+      hideOverlay();
+      if (errorMessageEl) {
+        errorMessageEl.textContent = '';
+      }
+
+      const requests = [...pendingAuthRequests];
+      requests.forEach((request) => {
+        request.reject(new Error('Authentication cancelled'));
+      });
+    }
+  });
 
   signInButton?.addEventListener('click', async () => {
     if (!signInButton) {
@@ -98,13 +126,45 @@ const hideOverlay = (): void => {
 
 export const requireAuth = (): Promise<User> =>
   new Promise((resolve, reject) => {
-    const unsubscribe = onAuthStateChanged(
+    let unsubscribe: Unsubscribe | null = null;
+    let pendingUnsubscribe = false;
+
+    const request: PendingAuthRequest = {
+      reject: () => {
+        /* placeholder */
+      },
+      cleanup: () => {
+        /* placeholder */
+      }
+    };
+
+    const cleanup = (): void => {
+      removePendingRequest(request);
+      if (unsubscribe) {
+        const fn = unsubscribe;
+        unsubscribe = null;
+        fn();
+      } else {
+        pendingUnsubscribe = true;
+      }
+    };
+
+    request.reject = (reason: Error) => {
+      cleanup();
+      reject(reason);
+    };
+
+    request.cleanup = cleanup;
+
+    pendingAuthRequests.push(request);
+
+    unsubscribe = onAuthStateChanged(
       auth,
       (user) => {
         if (user) {
           hideOverlay();
+          cleanup();
           resolve(user);
-          unsubscribe();
         } else {
           showOverlay();
         }
@@ -113,10 +173,15 @@ export const requireAuth = (): Promise<User> =>
         if (errorMessageEl) {
           errorMessageEl.textContent = error.message;
         }
-        reject(error);
-        unsubscribe();
+        request.reject(error instanceof Error ? error : new Error('Authentication failed.'));
       }
     );
+
+    if (pendingUnsubscribe && unsubscribe) {
+      const fn = unsubscribe;
+      unsubscribe = null;
+      fn();
+    }
   });
 
 export const attachSignOutHandler = (button: HTMLElement | null): void => {
