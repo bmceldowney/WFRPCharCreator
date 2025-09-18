@@ -7,10 +7,8 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-import {setGlobalOptions} from "firebase-functions";
-import {onRequest} from "firebase-functions/https";
-import * as logger from "firebase-functions/logger";
-import * as functions from 'firebase-functions';
+import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { setGlobalOptions } from "firebase-functions/v2/options";
 import * as admin from 'firebase-admin';
 
 // Start writing functions
@@ -38,13 +36,15 @@ admin.initializeApp();
 
 // ... (previous imports and admin.initializeApp())
 
-export const setCustomUserRole = functions.https.onCall(async (data, context) => {
+export const setCustomUserRole = onCall(async (request) => {
+    const { data, auth: context } = request;
+
     // 1. **Authentication and Authorization Check:**
     //    Crucially, verify that the person calling this function is authorized
     //    to set roles. For example, only an existing 'admin' should be able to do this.
     if (!context.auth) {
         // User is not authenticated
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
             'unauthenticated',
             'You must be logged in to perform this action.'
         );
@@ -54,7 +54,7 @@ export const setCustomUserRole = functions.https.onCall(async (data, context) =>
     // You'd typically set the initial admin user's claim directly via the Firebase console
     // or a one-off Admin SDK script.
     if (!(context.auth.token && context.auth.token.admin === true)) {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
             'permission-denied',
             'Only administrators can set user roles.'
         );
@@ -66,13 +66,13 @@ export const setCustomUserRole = functions.https.onCall(async (data, context) =>
     const newRole = data.role; // e.g., 'editor', 'basic', 'moderator'
 
     if (!targetUid || typeof targetUid !== 'string') {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
             'invalid-argument',
             'The "uid" argument is required and must be a string.'
         );
     }
     if (!newRole || typeof newRole !== 'string') {
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
             'invalid-argument',
             'The "role" argument is required and must be a string.'
         );
@@ -103,14 +103,14 @@ export const setCustomUserRole = functions.https.onCall(async (data, context) =>
     } catch (error: any) {
         // Handle specific Firebase Auth errors, e.g., user not found
         if (error.code === 'auth/user-not-found') {
-            throw new functions.https.HttpsError(
+            throw new HttpsError(
                 'not-found',
                 `User with UID ${targetUid} not found.`,
                 error.message
             );
         }
         // Catch any other errors
-        throw new functions.https.HttpsError(
+        throw new HttpsError(
             'internal',
             'Failed to set custom user role.',
             error.message
